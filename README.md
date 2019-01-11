@@ -34,22 +34,22 @@ require 'suggest'
 => [:group_by]
 
 # Object#what_mutates? tells you which method changes the object to the desired state
-[1,2,3].what_mutates?([2, 3])
+[1,2,3].what_mutates? [2, 3]
 => [:shift]
 
 # You can also match on the return value
-[1,2,3].what_mutates?([2, 3], returns: 1)
+[1,2,3].what_mutates? [2, 3], returns: 1
 => [:shift]
 
-[1,2,3].what_mutates?([2, 3], returns: 2)
+[1,2,3].what_mutates? [2, 3], returns: 2
 => []
 
 # You can specify which args to pass to the method
-[1,2,3].what_mutates?([3], args: [2])
+[1,2,3].what_mutates? [3], args: [2]
 => [:shift]
 
 # It also works on a bunch of core modules
-"HELLO".what_mutates?("hello")
+"HELLO".what_mutates? "hello"
 => [:swapcase!, :downcase!]
 
 # And you can give it a block as well
