@@ -9,7 +9,8 @@ module Suggest
     Hash,
     Regexp,
     Integer,
-    Set
+    Set,
+    Symbol
   ])
 
   UNSAFE_WITH_BLOCK = Set.new([
