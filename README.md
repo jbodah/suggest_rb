@@ -56,3 +56,11 @@ require 'suggest'
 [1,2,3,4].what_mutates? [2,4] { |n| n % 2 == 0 }
 => [:select!, :keep_if]
 ```
+
+## Note to Self
+
+Snippet to use in `bin/console` for finding methods for blacklisting:
+
+```
+Suggest::SUGGEST_MODS.flat_map { |k| [k].product(k.instance_methods) }.select { |k, v| v == :rand }.map { |k, v| k.instance_method(v).owner }.uniq
+```
