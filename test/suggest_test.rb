@@ -29,6 +29,14 @@ class SuggestTest < Minitest::Spec
       rv = [1,2,3,4].what_returns?({true => [2,4], false => [1,3]}) { |n| n % 2 == 0 }
       assert_includes rv, :group_by
     end
+
+    it "doesn't return inconsistent methods" do
+      rv = [1].what_returns?(1)
+      refute_includes rv, :sample
+
+      rv = [1].what_returns?([1])
+      refute_includes rv, :shuffle
+    end
   end
 
   describe "#what_mutates?" do
@@ -51,6 +59,11 @@ class SuggestTest < Minitest::Spec
     it "works on block expressions" do
       rv = [1,2,3,4].what_mutates?([2,4]) { |n| n % 2 == 0 }
       assert_includes rv, :select!
+    end
+
+    it "doesn't return inconsistent methods" do
+      rv = [1].what_mutates?([1])
+      refute_includes rv, :shuffle!
     end
   end
 end

@@ -2,14 +2,34 @@ require "suggest/version"
 require "set"
 
 module Suggest
-  SUGGEST_MODS = Set.new([Array, Enumerable, String, Hash, Regexp, Integer, Set])
-  UNSAFE = Set.new([Array.instance_method(:cycle)])
+  SUGGEST_MODS = Set.new([
+    Array,
+    Enumerable,
+    String,
+    Hash,
+    Regexp,
+    Integer,
+    Set
+  ])
+
+  UNSAFE_WITH_BLOCK = Set.new([
+    [Array, :cycle],
+    [Enumerable, :cycle]
+  ])
+
+  INCONSISTENT = Set.new([
+    [Array, :sample],
+    [Array, :shuffle],
+    [Array, :shuffle!]
+  ])
 
   module Mixin
     def what_returns?(expected, args: [], allow_mutation: false)
       block = Proc.new if block_given?
 
-      applicable_methods = self.methods.map(&method(:method)).select { |m| SUGGEST_MODS.include?(m.owner) }
+      applicable_methods = self.methods.map(&method(:method)).select do |m|
+        SUGGEST_MODS.include?(m.owner) && !INCONSISTENT.include?([m.owner, m.name])
+      end
 
       applicable_methods.select do |m|
         arity = m.arity
@@ -17,7 +37,7 @@ module Suggest
 
         post = clone
         if block
-          next if UNSAFE.include?(m.unbind)
+          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
           result = post.public_send(m.name, *args, &block) rescue next
         else
           result = post.public_send(m.name, *args) rescue next
@@ -33,7 +53,9 @@ module Suggest
       args = opts[:args] || []
       block = Proc.new if block_given?
 
-      applicable_methods = self.methods.map(&method(:method)).select { |m| SUGGEST_MODS.include?(m.owner) }
+      applicable_methods = self.methods.map(&method(:method)).select do |m|
+        SUGGEST_MODS.include?(m.owner) && !INCONSISTENT.include?([m.owner, m.name])
+      end
 
       applicable_methods.select do |m|
         arity = m.arity
@@ -41,7 +63,7 @@ module Suggest
 
         post = clone
         if block
-          next if UNSAFE.include?(m.unbind)
+          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
           result = post.public_send(m.name, *args, &block) rescue next
         else
           result = post.public_send(m.name, *args) rescue next
