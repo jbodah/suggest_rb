@@ -66,4 +66,26 @@ class SuggestTest < Minitest::Spec
       refute_includes rv, :shuffle!
     end
   end
+
+  describe "suggestable_methods" do
+    it "skips scary methods" do
+      scary = [
+        :taint,
+        :untaint,
+        :freeze,
+        :trust,
+        :untrust,
+        /method_added/,
+        /variable/,
+        /method/,
+        :clone,
+        :dup,
+      ]
+
+      scary.each do |s|
+        found = Suggest.suggestable_methods.find { |_klass, name| s === name }
+        assert_nil found, "didn't expect #{found.inspect}"
+      end
+    end
+  end
 end
