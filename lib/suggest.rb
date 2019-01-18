@@ -2,7 +2,7 @@ require "suggest/version"
 require "set"
 
 module Suggest
-  SUGGEST_MODS = Set.new([Array, Enumerable, String, Hash, Regexp, Integer])
+  SUGGEST_MODS = Set.new([Array, Enumerable, String, Hash, Regexp, Integer, Set])
   UNSAFE = Set.new([Array.instance_method(:cycle)])
 
   module Mixin
