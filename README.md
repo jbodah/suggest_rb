@@ -19,11 +19,11 @@ require 'suggest'
 
 # You can also specify the args you want that method to take
 [1,2,3].what_returns? [1], args: [1]
-=> [:sample, :first, :take, :grep, :min]
+=> [:first, :take, :grep, :min]
 
 # By default, it only returns methods that don't mutate the object
 [1,2,3].what_returns? [1], args: [1], allow_mutation: true
-=> [:sample, :first, :take, :shift, :grep, :min]
+=> [:first, :take, :shift, :grep, :min]
 
 # It works on several core modules including String
 "HELLO".what_returns? "hello"
@@ -55,6 +55,14 @@ require 'suggest'
 # And you can give it a block as well
 [1,2,3,4].what_mutates? [2,4] { |n| n % 2 == 0 }
 => [:select!, :keep_if]
+
+# It respects the ruby version
+# ruby 2.4.3
+{a: 1, b: 2}.what_returns?({})
+=> []
+# ruby 2.5.0
+{a: 1, b: 2}.what_returns?({})
+=> [:slice]
 ```
 
 ## Note to Self
