@@ -19,11 +19,11 @@ require 'suggest'
 
 # You can also specify the args you want that method to take
 [1,2,3].what_returns? [1], args: [1]
-=> [:sample, :first, :take, :grep, :min]
+=> [:first, :take, :grep, :min]
 
 # By default, it only returns methods that don't mutate the object
 [1,2,3].what_returns? [1], args: [1], allow_mutation: true
-=> [:sample, :first, :take, :shift, :grep, :min]
+=> [:first, :take, :shift, :grep, :min]
 
 # It works on several core modules including String
 "HELLO".what_returns? "hello"
