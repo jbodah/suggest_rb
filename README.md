@@ -55,6 +55,14 @@ require 'suggest'
 # And you can give it a block as well
 [1,2,3,4].what_mutates? [2,4] { |n| n % 2 == 0 }
 => [:select!, :keep_if]
+
+# It respects the ruby version
+# ruby 2.4.3
+{a: 1, b: 2}.what_returns?({})
+=> []
+# ruby 2.5.0
+{a: 1, b: 2}.what_returns?({})
+=> [:slice]
 ```
 
 ## Note to Self
