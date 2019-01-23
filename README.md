@@ -2,6 +2,10 @@
 
 tells you which method does the thing you want to do
 
+## Disclaimer
+
+I don't recommend you ship this in your Gemfile. Keep it in your system's gems (e.g. `gem install`) and load it as needed (e.g. `irb -rsuggest`, `RUBY_OPT=-rsuggest irb`, etc)
+
 ## Installation
 
 ```
