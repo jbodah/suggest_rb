@@ -55,15 +55,17 @@ module Suggest
           !TOO_COMPLICATED.include?([m.owner, m.name])
       end.select do |m|
         arity = m.arity
-        next unless arity == -1 || arity == args.count
+        next unless arity < 0 || arity == args.count
 
         post = clone
-        if block
-          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-          result = post.public_send(m.name, *args, &block) rescue next
-        else
-          result = post.public_send(m.name, *args) rescue next
-        end
+
+        next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
+        result =
+          if allow_not_public
+            post.send(m.name, *args, &block)
+          else
+            post.public_send(m.name, *args, &block)
+          end rescue next
 
         next unless allow_mutation || self == post
 
@@ -78,15 +80,17 @@ module Suggest
           !TOO_COMPLICATED.include?([m.owner, m.name])
       end.select do |m|
         arity = m.arity
-        next unless arity == -1 || arity == args.count
+        next unless arity < 0 || arity == args.count
 
         post = clone
-        if block
-          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-          result = post.public_send(m.name, *args, &block) rescue next
-        else
-          result = post.public_send(m.name, *args) rescue next
-        end
+
+        next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
+        result =
+          if allow_not_public
+            post.send(m.name, *args, &block)
+          else
+            post.public_send(m.name, *args, &block)
+          end rescue next
 
         if opts.key?(:returns)
           next unless Suggest.eq?(result, opts[:returns])

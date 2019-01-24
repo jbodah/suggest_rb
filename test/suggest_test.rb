@@ -37,6 +37,14 @@ class SuggestTest < Minitest::Spec
       rv = [1].what_returns?([1])
       refute_includes rv, :shuffle
     end
+
+    it "returns a private method of arity -2" do
+      rv = Set.new([1]).what_returns? Set.new([1]), args: [[1]]
+      refute_includes rv, :flatten_merge
+
+      rv = Set.new([1]).what_returns? Set.new([1]), args: [[1]], allow_not_public: true
+      assert_includes rv, :flatten_merge
+    end
   end
 
   describe "#what_mutates?" do
