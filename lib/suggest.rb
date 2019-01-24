@@ -48,7 +48,7 @@ module Suggest
   ])
 
   module Mixin
-    def what_returns?(expected, args: [], allow_mutation: false)
+    def what_returns?(expected, args: [], allow_mutation: false, allow_not_public: false)
       block = Proc.new if block_given?
 
       applicable_methods = self.methods.map(&method(:method)).select do |m|
@@ -59,15 +59,17 @@ module Suggest
 
       applicable_methods.select do |m|
         arity = m.arity
-        next unless arity == -1 || arity == args.count
+        next unless arity < 0 || arity == args.count
 
         post = clone
-        if block
-          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-          result = post.public_send(m.name, *args, &block) rescue next
-        else
-          result = post.public_send(m.name, *args) rescue next
-        end
+
+        next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
+        result =
+          if allow_not_public
+            post.send(m.name, *args, &block)
+          else
+            post.public_send(m.name, *args, &block)
+          end rescue next
 
         next unless allow_mutation || self == post
 
@@ -75,8 +77,7 @@ module Suggest
       end.map(&:name)
     end
 
-    def what_mutates?(expected, opts = {})
-      args = opts[:args] || []
+    def what_mutates?(expected, args: [], allow_not_public: false, **opts)
       block = Proc.new if block_given?
 
       applicable_methods = self.methods.map(&method(:method)).select do |m|
@@ -87,15 +88,17 @@ module Suggest
 
       applicable_methods.select do |m|
         arity = m.arity
-        next unless arity == -1 || arity == args.count
+        next unless arity < 0 || arity == args.count
 
         post = clone
-        if block
-          next if UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-          result = post.public_send(m.name, *args, &block) rescue next
-        else
-          result = post.public_send(m.name, *args) rescue next
-        end
+
+        next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
+        result =
+          if allow_not_public
+            post.send(m.name, *args, &block)
+          else
+            post.public_send(m.name, *args, &block)
+          end rescue next
 
         if opts.key?(:returns)
           next unless Suggest.eq?(result, opts[:returns])
