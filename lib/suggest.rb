@@ -48,16 +48,12 @@ module Suggest
   ])
 
   module Mixin
-    def what_returns?(expected, args: [], allow_mutation: false)
-      block = Proc.new if block_given?
-
-      applicable_methods = self.methods.map(&method(:method)).select do |m|
+    def what_returns?(expected, args: [], allow_mutation: false, allow_not_public: false, &block)
+      methods.map(&method(:method)).select do |m|
         SUGGEST_MODS.include?(m.owner) &&
           !INCONSISTENT.include?([m.owner, m.name]) &&
           !TOO_COMPLICATED.include?([m.owner, m.name])
-      end
-
-      applicable_methods.select do |m|
+      end.select do |m|
         arity = m.arity
         next unless arity == -1 || arity == args.count
 
@@ -75,17 +71,12 @@ module Suggest
       end.map(&:name)
     end
 
-    def what_mutates?(expected, opts = {})
-      args = opts[:args] || []
-      block = Proc.new if block_given?
-
-      applicable_methods = self.methods.map(&method(:method)).select do |m|
+    def what_mutates?(expected, args: [], allow_not_public: false, **opts, &block)
+      methods.map(&method(:method)).select do |m|
         SUGGEST_MODS.include?(m.owner) &&
           !INCONSISTENT.include?([m.owner, m.name]) &&
           !TOO_COMPLICATED.include?([m.owner, m.name])
-      end
-
-      applicable_methods.select do |m|
+      end.select do |m|
         arity = m.arity
         next unless arity == -1 || arity == args.count
 
@@ -111,14 +102,11 @@ module Suggest
   end
 
   def self.suggestable_methods
-    candidates = []
-    SUGGEST_MODS.each do |mod|
+    SUGGEST_MODS.each_with_object([]) do |mod, candidates|
       owned_methods = mod.instance_methods.select { |m| mod.instance_method(m).owner == mod }
       next if owned_methods.none?
       candidates += [mod].product(owned_methods)
-    end
-
-    candidates.reject do |m|
+    end.reject do |m|
       INCONSISTENT.include?(m) || TOO_COMPLICATED.include?(m)
     end
   end
