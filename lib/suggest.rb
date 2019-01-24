@@ -1,4 +1,4 @@
-require "suggest/version"
+require_relative "suggest/version"
 require "set"
 
 module Suggest
@@ -47,25 +47,22 @@ module Suggest
     [Numeric, :dup],
   ])
 
+  SELECTOR = ->(m) do
+    SUGGEST_MODS.include?(m.owner) &&
+      !INCONSISTENT.include?([m.owner, m.name]) &&
+      !TOO_COMPLICATED.include?([m.owner, m.name])
+  end
+
   module Mixin
     def what_returns?(expected, args: [], allow_mutation: false, allow_not_public: false, &block)
-      methods.map(&method(:method)).select do |m|
-        SUGGEST_MODS.include?(m.owner) &&
-          !INCONSISTENT.include?([m.owner, m.name]) &&
-          !TOO_COMPLICATED.include?([m.owner, m.name])
-      end.select do |m|
+      methods.map(&method(:method)).select(&SELECTOR).select do |m|
         arity = m.arity
         next unless arity < 0 || arity == args.count
 
         post = clone
 
         next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-        result =
-          if allow_not_public
-            post.send(m.name, *args, &block)
-          else
-            post.public_send(m.name, *args, &block)
-          end rescue next
+        result = post.__send__(allow_not_public ? :send : :public_send, m.name, *args, &block) rescue next
 
         next unless allow_mutation || self == post
 
@@ -74,27 +71,16 @@ module Suggest
     end
 
     def what_mutates?(expected, args: [], allow_not_public: false, **opts, &block)
-      methods.map(&method(:method)).select do |m|
-        SUGGEST_MODS.include?(m.owner) &&
-          !INCONSISTENT.include?([m.owner, m.name]) &&
-          !TOO_COMPLICATED.include?([m.owner, m.name])
-      end.select do |m|
+      methods.map(&method(:method)).select(&SELECTOR).select do |m|
         arity = m.arity
         next unless arity < 0 || arity == args.count
 
         post = clone
 
         next if block && UNSAFE_WITH_BLOCK.include?([m.owner, m.name])
-        result =
-          if allow_not_public
-            post.send(m.name, *args, &block)
-          else
-            post.public_send(m.name, *args, &block)
-          end rescue next
+        result = post.__send__(allow_not_public ? :send : :public_send, m.name, *args, &block) rescue next
 
-        if opts.key?(:returns)
-          next unless Suggest.eq?(result, opts[:returns])
-        end
+        next if opts.key?(:returns) && !Suggest.eq?(result, opts[:returns])
 
         Suggest.eq?(post, expected)
       end.map(&:name)
@@ -103,6 +89,15 @@ module Suggest
 
   def self.eq?(result, expected)
     result.is_a?(expected.class) && result == expected
+  end
+
+  def self.suggestable!(mod, **corrections) # unsafe_with_block: [], inconsistent: [], too_complicated: []
+    SUGGEST_MODS << mod
+    %w[unsafe_with_block inconsistent too_complicated].each do |correction|
+      c = Suggest.const_get(correction.upcase)
+      [mod].product(corrections.fetch(correction, [])).each(&c.method(:<<))
+    end
+    mod.include(Suggest::Mixin) unless mod.ancestors.include?(Suggest::Mixin)
   end
 
   def self.suggestable_methods
@@ -116,4 +111,6 @@ module Suggest
   end
 end
 
-Object.include(Suggest::Mixin)
+Suggest::SUGGEST_MODS.each do |mod|
+  mod.include(Suggest::Mixin) unless mod.ancestors.include?(Suggest::Mixin)
+end
