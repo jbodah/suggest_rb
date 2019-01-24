@@ -16,3 +16,5 @@ class NotYetSuggestable
     other.is_a?(NotYetSuggestable) && other.foo == foo
   end
 end
+
+class NotSuggestable; end

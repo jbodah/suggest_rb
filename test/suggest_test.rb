@@ -53,6 +53,10 @@ class SuggestTest < Minitest::Spec
       Suggest.suggestable!(NotYetSuggestable)
       rv = NotYetSuggestable.new.what_returns?(42)
       assert_includes rv, :foo
+
+      assert_raises ArgumentError do
+        Suggest.suggestable!(NotSuggestable)
+      end
     end
   end
 

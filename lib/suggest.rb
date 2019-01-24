@@ -1,4 +1,4 @@
-require_relative "suggest/version"
+require "suggest/version"
 require "set"
 
 module Suggest
@@ -92,6 +92,8 @@ module Suggest
   end
 
   def self.suggestable!(mod, **corrections) # unsafe_with_block: [], inconsistent: [], too_complicated: []
+    raise ArgumentError.new("Must support smart comparison (implement «#{mod}#==»)") if mod.instance_method(:==).owner == BasicObject
+
     SUGGEST_MODS << mod
     %w[unsafe_with_block inconsistent too_complicated].each do |correction|
       c = Suggest.const_get(correction.upcase)
