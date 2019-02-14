@@ -45,6 +45,19 @@ class SuggestTest < Minitest::Spec
       rv = Set.new([1]).what_returns? Set.new([1]), args: [[1]], allow_not_public: true
       assert_includes rv, :flatten_merge
     end
+
+    it "allows dynamic convertion of anything to suggestable" do
+      rv = NotYetSuggestable.new.what_returns?(42)
+      refute_includes rv, :foo
+
+      Suggest.suggestable!(NotYetSuggestable)
+      rv = NotYetSuggestable.new.what_returns?(42)
+      assert_includes rv, :foo
+
+      assert_raises ArgumentError do
+        Suggest.suggestable!(NotSuggestable)
+      end
+    end
   end
 
   describe "#what_mutates?" do
