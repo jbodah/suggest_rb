@@ -60,6 +60,11 @@ require 'suggest'
 [1,2,3,4].what_mutates? [2,4] { |n| n % 2 == 0 }
 => [:select!, :keep_if]
 
+# You can use a lambda as an expected
+[1,2,3,4].what_returns? -> (something_that) { something_that.to_i == 4 }
+=> [:count, :length, :size, :last, :max]
+
+
 # It respects the ruby version
 # ruby 2.4.3
 {a: 1, b: 2}.what_returns?({})
