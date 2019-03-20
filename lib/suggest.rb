@@ -67,7 +67,7 @@ module Suggest
         next unless allow_mutation || self == post
 
         if expected.is_a?(Proc) && expected.lambda?
-          expected.call(result)
+          expected.call(result) rescue false
         else
           Suggest.eq?(result, expected)
         end

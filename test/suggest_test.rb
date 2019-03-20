@@ -63,6 +63,10 @@ class SuggestTest < Minitest::Spec
       rv = [1,2,3].what_returns? -> (thing) { thing.to_s == "1" }
       assert_includes rv, :first
     end
+
+    it "given a lambda, doesn't blow up" do
+      [1,2,3].what_returns? -> (thing) { thing.first == 1 }
+    end
   end
 
   describe "#what_mutates?" do
