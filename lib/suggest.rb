@@ -66,7 +66,11 @@ module Suggest
 
         next unless allow_mutation || self == post
 
-        Suggest.eq?(result, expected)
+        if expected.is_a?(Proc) && expected.lambda?
+          expected.call(result)
+        else
+          Suggest.eq?(result, expected)
+        end
       end.map(&:name)
     end
 

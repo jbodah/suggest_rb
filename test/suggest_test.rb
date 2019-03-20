@@ -58,6 +58,11 @@ class SuggestTest < Minitest::Spec
         Suggest.suggestable!(NotSuggestable)
       end
     end
+
+    it "given a lambda, yields to the lambda to see if result is equal" do
+      rv = [1,2,3].what_returns? -> (thing) { thing.to_s == "1" }
+      assert_includes rv, :first
+    end
   end
 
   describe "#what_mutates?" do
