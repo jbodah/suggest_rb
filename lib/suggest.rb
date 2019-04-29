@@ -45,6 +45,12 @@ module Suggest
     [Numeric, :singleton_method_added],
     [Numeric, :clone],
     [Numeric, :dup],
+    [BasicObject, :instance_eval],
+    [BasicObject, :instance_exec],
+    [BasicObject, :__send__],
+    [BasicObject, :singleton_method_added],
+    [BasicObject, :singleton_method_removed],
+    [BasicObject, :singleton_method_undefined]
   ])
 
   SELECTOR = ->(m) do
